@@ -1,0 +1,117 @@
+This script is a wrapper around curl, a popular command line http client, that
+will calculate the authentication parameters for the request.
+
+To start, create an .s3curl file in your home directory.  This file will contain your
+AWS Access Key Id and AWS Secret Access Key pairs.
+
+For example:
+
+%awsSecretAccessKeys = (
+    # personal account
+    personal => {
+        id => '1ME55KNV6SBTR7EXG0R2',
+        key => 'zyMrlZUKeG9UcYpwzlPko/+Ciu0K2co0duRM3fhi',
+    },
+
+   # corporate account
+   company => {
+        id => '1ATXQ3HHA59CYF1CVS02',
+        key => 'WQY4SrSS95pJUT95V6zWea01gBKBCL6PI0cdxeH8',
+    },
+);
+
+After creating the .s3curl file, you can try the following commands using s3curl
+
+
+To get an object, you would run:
+
+./s3curl.pl --id=[friendly-name] -- http://s3.amazonaws.com/[bucket-name]/[key-name]
+
+If you just want to see the object's metadata, run:
+
+./s3curl.pl --id=[friendly=name] --head -- http://s3.amazonaws.com/[bucket-name]/[key-name]
+
+
+The arguments after the '--' are passed through to curl, so you could put any
+curl specific options there, and then the url you are trying to get.
+
+To put an object, run:
+
+./s3curl.pl --id=[friendly-name] --put=<file-name> -- http://s3.amazonaws.com/[bucket-name]/[key-name]
+
+To delete an object:
+
+./s3curl.pl --id=[friendly-name] --delete -- http://s3.amazonaws.com/[bucket-name]/[key-name]
+
+To copy an object:
+
+./s3curl.pl --id=[friendly-name] --copy=[source-bucket-name/source-key-name] -- http://s3.amazonaws.com/[bucket-name]/[key-name]
+
+To list a bucket:
+
+./s3curl.pl --id=[friendly-name] -- http://s3.amazonaws.com/[bucket-name]
+
+To create a bucket:
+
+./s3curl.pl --id=[friendly-name] --createBucket -- http://s3.amazonaws.com/[bucket-name]
+
+To create a bucket with a location constraint EU:
+
+./s3curl.pl --id=[friendly-name] --createBucket=EU -- http://s3.amazonaws.com/[bucket-name]
+
+To delete a bucket:
+
+./s3curl.pl --id=[friendly-name] --delete -- http://s3.amazonaws.com/[bucket-name]
+
+To enable versioning for a bucket:
+
+./s3curl.pl --id=[friendly-name] --put ~/versioningEnable -- http://s3.amazonaws.com/[bucket-name]?versioning
+
+where, contents of ~/versioningEnable is
+
+<?xml version="1.0" encoding="UTF-8"?>
+<VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+  <Status>Enabled</Status>
+</VersioningConfiguration>
+
+Doing a GET for an object on a bucket where versioning is enabled, returns the latest version. 
+
+./s3curl.pl --id=[friendly-name] -- http://s3.amazonaws.com/[bucket-name]/[key-name] -v
+
+[Look for x-amz-version-id in the response]
+
+To get a specific version of an object:
+
+./s3curl.pl --id=[friendly-name] -- http://s3.amazonaws.com/[bucket-name]/[key-name]?versionId=[version-id]
+
+To get a ACL for a specific version of an object:
+
+./s3curl.pl --id=[friendly-name] -- http://s3.amazonaws.com/[bucket-name]/[key-name]?versionId=[version-id]&acl
+
+To copy a specific version of an object:
+
+./s3curl.pl --id=[friendly-name] --copy=[source-bucket-name/source-key-name?versionId=[version-id]] -- http://s3.amazonaws.com/[bucket-name]/[key-name]
+
+To list all the versions in a bucket:
+
+./s3curl.pl --id=[friendly-name] -- http://s3.amazonaws.com/[bucket-name]?versions
+
+
+SECURITY CONSIDERATION:
+
+On a shared system, it is dangerous to specify your AWS Secret Access Key on
+the command line, as any other user on the machine can view your command line.
+Therefore we strongly advocate the use of .s3curl file to store and manage your
+keys.
+
+
+
+
+This software code is made available "AS IS" without warranties of any
+kind.  You may copy, display, modify and redistribute the software
+code either by itself or as incorporated into your code; provided that
+you do not remove any proprietary notices.  Your use of this software
+code is at your own risk and you waive any claim against Amazon
+Digital Services, Inc. or its affiliates with respect to your use of
+this software code. (c) 2006 Amazon Digital Services, Inc. or its
+affiliates.
