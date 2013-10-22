@@ -47,6 +47,10 @@ To copy an object:
 
 ./s3curl.pl --id=[friendly-name] --copy=[source-bucket-name/source-key-name] -- http://s3.amazonaws.com/[bucket-name]/[key-name]
 
+To restore an object (previously archived to Glacier):
+
+./s3curl.pl --id=[friendly-name] --post --data-binary "<RestoreRequest><Days>[number-of-days]</Days></RestoreRequest>" -- http://s3.amazonaws.com/[bucket-name]/[key-name]?restore
+
 To list a bucket:
 
 ./s3curl.pl --id=[friendly-name] -- http://s3.amazonaws.com/[bucket-name]
