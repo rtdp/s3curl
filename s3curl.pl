@@ -59,6 +59,20 @@ my $copySourceRange;
 my $postBody;
 my $calculateContentMD5 = 0;
 
+# Holder for CURL -x option: 
+# -x, --proxy [PROTOCOL://]HOST[:PORT] Use proxy on given port
+#     --proxy-anyauth Pick "any" proxy authentication method (H)
+#     --proxy-basic   Use Basic authentication on the proxy (H)
+#     --proxy-digest  Use Digest authentication on the proxy (H)
+#     --proxy-negotiate Use Negotiate authentication on the proxy (H)
+#     --proxy-ntlm    Use NTLM authentication on the proxy (H) 
+my $proxy;
+
+# Holder for CURL -p option:
+# -p, --proxytunnel   Operate through a HTTP proxy tunnel (using CONNECT)
+#     --pubkey KEY    Public key file name (SSH)
+my $proxytunnel;
+
 my $DOTFILENAME=".s3curl";
 my $EXECFILE=$FindBin::Bin;
 my $LOCALDOTFILE = $EXECFILE . "/" . $DOTFILENAME;
@@ -98,6 +112,8 @@ GetOptions(
     'help' => \$help,
     'debug' => \$debug,
     'calculateContentMd5' => \$calculateContentMD5,
+    'proxy=s' => \$proxy,
+    'proxytunnel=s' => \$proxytunnel
 );
 
 my $usage = <<USAGE;
@@ -115,6 +131,8 @@ Usage $0 --id friendly-name (or AWSAccessKeyId) [options] -- [curl-options] [URL
   --createBucket [<region>]   create-bucket with optional location constraint
   --head                      HEAD request
   --debug                     enable debug logging
+  --proxy <proxyhost:port>    Proxy Host to utilize
+  --proxytunnel <host:port>   Proxy Host to use CONNECT proxy tunnel with
  common curl options:
   -H 'x-amz-acl: public-read' another way of using canned ACLs
   -v                          verbose logging
@@ -270,6 +288,24 @@ if (defined $createBucket) {
 } elsif (defined $postBody) {
     if (length($postBody)>0) {
         push @args, ("-T", $postBody);
+    }
+} elsif (defined $proxy) {
+    # Handler for CURL -x option: 
+    # -x, --proxy [PROTOCOL://]HOST[:PORT] Use proxy on given port
+    #     --proxy-anyauth Pick "any" proxy authentication method (H)
+    #     --proxy-basic   Use Basic authentication on the proxy (H)
+    #     --proxy-digest  Use Digest authentication on the proxy (H)
+    #     --proxy-negotiate Use Negotiate authentication on the proxy (H)
+    #     --proxy-ntlm    Use NTLM authentication on the proxy (H) 
+    if (length($proxy)>0) {
+        push @args, ("-x", $proxy);
+    }
+} elsif (defined $proxytunnel) {
+    # Handler for CURL -p option:
+    # -p, --proxytunnel   Operate through a HTTP proxy tunnel (using CONNECT)
+    #     --pubkey KEY    Public key file name (SSH)
+    if (length($proxytunnel)>0) {
+        push @args, ("-p", $proxytunnel);
     }
 }
 
