@@ -214,7 +214,7 @@ for (my $i=0; $i<@ARGV; $i++) {
         if ($header =~ /^[Hh][Oo][Ss][Tt]:(.+)$/) {
             $host = $1;
         }
-        elsif ($header =~ /^([Xx]-[Aa][Mm][Zz]-.+): *(.+)$/) {
+        elsif ($header =~ /^([Xx]-[Aa][Mm][Zz]-[^:]+): *(.+)$/) {
             my $name = lc $1;
             my $value = $2;
             # merge with existing values
@@ -235,7 +235,8 @@ foreach (sort (keys %xamzHeaders)) {
     $xamzHeadersToSign .= "$_:$headerValue\n";
 }
 
-my $httpDate = POSIX::strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime );
+# NOTE: Need to skip the Date: header, in case x-amz-date got provided
+my $httpDate = (defined $xamzHeaders{'x-amz-date'}) ? '' : POSIX::strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime);
 my $stringToSign = "$method\n$contentMD5\n$contentType\n$httpDate\n$xamzHeadersToSign$resource";
 
 debug("StringToSign='" . $stringToSign . "'");
@@ -245,7 +246,8 @@ my $signature = encode_base64($hmac->digest, "");
 
 
 my @args = ();
-push @args, ("-H", "Date: $httpDate");
+push @args, ("-v") if ($debug);
+push @args, ("-H", "Date: $httpDate") if ($httpDate);
 push @args, ("-H", "Authorization: AWS $keyId:$signature");
 push @args, ("-H", "x-amz-acl: $acl") if (defined $acl);
 push @args, ("-L");
@@ -275,7 +277,7 @@ if (defined $createBucket) {
 
 push @args, @ARGV;
 
-debug("exec $CURL " . join (" ", @args));
+debug("exec $CURL " . join (" ", map { / / && qq/'$_'/ || $_ } @args));
 exec($CURL, @args)  or die "can't exec program: $!";
 
 sub debug {
