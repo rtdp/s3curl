@@ -58,6 +58,7 @@ my $copySourceObject;
 my $copySourceRange;
 my $postBody;
 my $calculateContentMD5 = 0;
+my $endpoint;
 
 my $DOTFILENAME=".s3curl";
 my $EXECFILE=$FindBin::Bin;
@@ -98,6 +99,7 @@ GetOptions(
     'help' => \$help,
     'debug' => \$debug,
     'calculateContentMd5' => \$calculateContentMD5,
+    'endpoint:s' => \$endpoint,
 );
 
 my $usage = <<USAGE;
@@ -115,6 +117,8 @@ Usage $0 --id friendly-name (or AWSAccessKeyId) [options] -- [curl-options] [URL
   --createBucket [<region>]   create-bucket with optional location constraint
   --head                      HEAD request
   --debug                     enable debug logging
+  --endpoint [domain]         add domain to list of known endpoints. If domain
+                              is omitted, use host name extracted from URL
  common curl options:
   -H 'x-amz-acl: public-read' another way of using canned ACLs
   -v                          verbose logging
@@ -178,7 +182,16 @@ for (my $i=0; $i<@ARGV; $i++) {
     my $arg = $ARGV[$i];
     # resource name
     if ($arg =~ /https?:\/\/([^\/:?]+)(?::(\d+))?([^?]*)(?:\?(\S+))?/) {
-        $host = $1 if !$host;
+        if (!$host) {
+            $host = $1;
+
+            # Augment the endpoints list if user supplied "--endpoint"
+            # parameter. If domain is specified too, use it. Otherwise,
+            # append currently extracted host name.
+            if (defined $endpoint) {
+                push @endpoints, length $endpoint ? $endpoint : $host;
+            }
+        }
         my $port = defined $2 ? $2 : "";
         my $requestURI = $3;
         my $query = defined $4 ? $4 : "";
