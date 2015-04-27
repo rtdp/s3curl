@@ -236,7 +236,7 @@ foreach (sort (keys %xamzHeaders)) {
 }
 
 # NOTE: Need to skip the Date: header, in case x-amz-date got provided
-my $httpDate = (defined $xamzHeaders{'x-amz-date'}) ? '' : POSIX::strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime);
+my $httpDate = (defined $xamzHeaders{'x-amz-date'}) ? '' : getCanonDateTime();
 my $stringToSign = "$method\n$contentMD5\n$contentType\n$httpDate\n$xamzHeadersToSign$resource";
 
 debug("StringToSign='" . $stringToSign . "'");
@@ -376,4 +376,12 @@ sub calculateFileContentMD5 {
     my $b64 = encode_base64($md5->digest);
     chomp($b64);
     return $b64;
+}
+
+sub getCanonDateTime {
+    my $old_locale = POSIX::setlocale(POSIX::LC_TIME);
+    POSIX::setlocale(POSIX::LC_TIME, "C");
+    my $datetime = POSIX::strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime);
+    POSIX::setlocale(POSIX::LC_TIME, $old_locale);
+    return $datetime
 }
