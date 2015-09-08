@@ -194,8 +194,10 @@ for (my $i=0; $i<@ARGV; $i++) {
             "response-content-disposition", "response-content-encoding", "response-content-language",
             "response-content-type", "response-expires", "torrent",
             "uploadId", "uploads", "versionId", "versioning", "versions", "website", "lifecycle", "restore") {
-            if ($query =~ /(?:^|&)($attribute(?:=[^&]*)?)(?:&|$)/) {
-                push @attributes, uri_unescape($1);
+            if ($query =~ /(?:^|&)($attribute)=?([^&]+)?(?:&|$)/) {
+                my $kv_pair = sprintf("%s%s", $1, $2 ? sprintf("=%s", $2) : '');
+
+                push @attributes, uri_unescape($kv_pair);
             }
         }
         if (@attributes) {
