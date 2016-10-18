@@ -190,7 +190,7 @@ for (my $i=0; $i<@ARGV; $i++) {
         }
         my @attributes = ();
         for my $attribute ("acl", "delete", "location", "logging", "notification",
-            "partNumber", "policy", "requestPayment", "response-cache-control",
+            "partNumber", "policy", "requestPayment", "response-cache-control", "replication",
             "response-content-disposition", "response-content-encoding", "response-content-language",
             "response-content-type", "response-expires", "torrent",
             "uploadId", "uploads", "versionId", "versioning", "versions", "website", "lifecycle", "restore") {
