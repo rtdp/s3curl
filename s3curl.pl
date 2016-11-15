@@ -58,6 +58,7 @@ my $copySourceObject;
 my $copySourceRange;
 my $postBody;
 my $calculateContentMD5 = 0;
+my $ecs2;
 
 my $DOTFILENAME=".s3curl";
 my $EXECFILE=$FindBin::Bin;
@@ -98,6 +99,7 @@ GetOptions(
     'help' => \$help,
     'debug' => \$debug,
     'calculateContentMd5' => \$calculateContentMD5,
+    'ecs2' => \$ecs2,
 );
 
 my $usage = <<USAGE;
@@ -114,6 +116,7 @@ Usage $0 --id friendly-name (or AWSAccessKeyId) [options] -- [curl-options] [URL
   --copySrcRange {startIndex}-{endIndex}
   --createBucket [<region>]   create-bucket with optional location constraint
   --head                      HEAD request
+  --ecs2                      use if connecting to ECS 2.x
   --debug                     enable debug logging
  common curl options:
   -H 'x-amz-acl: public-read' another way of using canned ACLs
@@ -189,11 +192,15 @@ for (my $i=0; $i<@ARGV; $i++) {
             $resource = "/";
         }
         my @attributes = ();
-        for my $attribute ("acl", "delete", "location", "logging", "notification",
+        my @signedAttributes = ("acl", "delete", "location", "logging", "notification",
             "partNumber", "policy", "requestPayment", "response-cache-control",
             "response-content-disposition", "response-content-encoding", "response-content-language",
             "response-content-type", "response-expires", "torrent",
-            "uploadId", "uploads", "versionId", "versioning", "versions", "website", "lifecycle", "restore") {
+            "uploadId", "uploads", "versionId", "versioning", "versions", "website", "lifecycle", "restore");
+        if (!$ecs2) {
+            push @signedAttributes, ("query", "searchmetadata");
+        }
+        for my $attribute (@signedAttributes) {
             if ($query =~ /(?:^|&)($attribute(?:=[^&]*)?)(?:&|$)/) {
                 push @attributes, uri_unescape($1);
             }
