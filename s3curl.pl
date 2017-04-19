@@ -221,7 +221,7 @@ for (my $i=0; $i<@ARGV; $i++) {
         if ($header =~ /^[Hh][Oo][Ss][Tt]:(.+)$/) {
             $host = $1;
         }
-        elsif ($header =~ /^([Xx]-[Aa][Mm][Zz]-[^:]+): *(.+)$/) {
+	elsif ($header =~ /^([Xx]-(?:(?:[Aa][Mm][Zz])|(?:[Ee][Mm][Cc]))-[^:]+): *(.+)$/) {
             my $name = lc $1;
             my $value = $2;
             # merge with existing values
