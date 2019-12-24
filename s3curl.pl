@@ -58,6 +58,7 @@ my $copySourceObject;
 my $copySourceRange;
 my $postBody;
 my $calculateContentMD5 = 0;
+my $servicePath = "";
 
 my $DOTFILENAME=".s3curl";
 my $EXECFILE=$FindBin::Bin;
@@ -98,7 +99,11 @@ GetOptions(
     'help' => \$help,
     'debug' => \$debug,
     'calculateContentMd5' => \$calculateContentMD5,
+    'servicePath:s' => \$servicePath,
+    'endpoint:s' => \@endpoints,
 );
+
+debug("endpoints: @endpoints");
 
 my $usage = <<USAGE;
 Usage $0 --id friendly-name (or AWSAccessKeyId) [options] -- [curl-options] [URL]
@@ -115,6 +120,8 @@ Usage $0 --id friendly-name (or AWSAccessKeyId) [options] -- [curl-options] [URL
   --createBucket [<region>]   create-bucket with optional location constraint
   --head                      HEAD request
   --debug                     enable debug logging
+  --servicePath               service path which is not part of resource
+  --endpoint                  add endpoint to be excluded from signed string. Specify multiple parameters if you need add more than one.
  common curl options:
   -H 'x-amz-acl: public-read' another way of using canned ACLs
   -v                          verbose logging
@@ -288,6 +295,12 @@ sub debug {
 
 sub getResourceToSign {
     my ($host, $resourceToSignRef) = @_;
+
+    if ($servicePath) {
+        $$resourceToSignRef =~ s/$servicePath//;
+        debug ("resourceToSignRef: $$resourceToSignRef");
+    }
+
     for my $ep (@endpoints) {
         if ($host =~ /(.*)\.$ep/) { # vanity subdomain case
             my $vanityBucket = $1;
