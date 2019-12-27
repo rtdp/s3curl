@@ -130,7 +130,6 @@ die $usage if $help || !defined $keyId;
 
 if ($cmdLineSecretKey) {
     printCmdlineSecretWarning();
-    sleep 5;
 
     $secretKey = $cmdLineSecretKey;
 } else {
@@ -347,7 +346,7 @@ For example:
 
 \$ chmod 600 $DOTFILE
 
-Will sleep and continue despite this problem.
+Will continue despite this problem.
 Please set up $DOTFILE for future requests.
 END_WARNING
 }
